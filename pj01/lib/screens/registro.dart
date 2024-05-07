@@ -6,6 +6,7 @@ class RegistrationScreen extends StatelessWidget {
   final _nameController = TextEditingController();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
+  final _confirmPasswordController = TextEditingController(); // Novo controlador
 
   RegistrationScreen({Key? key}) : super(key: key);
 
@@ -64,11 +65,32 @@ class RegistrationScreen extends StatelessWidget {
                 obscureText: true,
               ),
               const SizedBox(height: 20.0),
+              TextFormField( // Novo campo de confirmação de senha
+                controller: _confirmPasswordController,
+                style: const TextStyle(color: Colors.white),
+                decoration: const InputDecoration(
+                  labelText: 'Confirmar Senha',
+                  labelStyle: TextStyle(color: Colors.white),
+                  focusedBorder: UnderlineInputBorder(
+                    borderSide: BorderSide(color: Colors.blue),
+                  ),
+                ),
+                obscureText: true,
+              ),
+              const SizedBox(height: 20.0),
               ElevatedButton(
                 onPressed: () async {
                   try {
-                    var success = await register(_nameController.text,
-                        _emailController.text, _passwordController.text);
+                    // Verifica se a senha e a confirmação de senha são iguais
+                    if (_passwordController.text !=
+                        _confirmPasswordController.text) {
+                      throw Exception(
+                          'A senha e a confirmação de senha não coincidem');
+                    }
+                    var success = await register(
+                        _nameController.text,
+                        _emailController.text,
+                        _passwordController.text);
                     if (success) {
                       Navigator.pushReplacementNamed(context, '/login');
                     } else {

@@ -16,7 +16,7 @@ class PosLoginScreen extends StatelessWidget {
           onPressed: () {
             Navigator.pushReplacementNamed(context, '/login');
           },
-          child: Text('Sair'),
+          child: const Text('Sair'),
         ),
       ),
     );
