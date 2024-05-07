@@ -10,10 +10,13 @@ class PosLoginScreen extends StatelessWidget {
         title: const Text("PosLogin"),
       ),
       body: SingleChildScrollView(
+        
         child: ElevatedButton(
+          
           onPressed: () {
             Navigator.pushReplacementNamed(context, '/login');
-          }, child: null,
+          },
+          child: Text('Sair'),
         ),
       ),
     );

@@ -4,7 +4,7 @@ const bcrypt = require('bcrypt');
 
 async function findUserByEmail(email) {
   try {
-    return await db('db_projeto').where({ email }).first();
+    return await db('user').where({ email }).first();
   } catch (error) {
     console.error("Erro ao buscar usuário por e-mail:", error);
     throw error;
@@ -46,11 +46,13 @@ async function addUser(name, email, password) {
 async function validateUser(email, password) {
   try {
     // Consulta o usuário pelo email no banco de dados
+    console.log('here')
     const user = await db('user')
       .select('email', 'password')
       .where({ 'email': email })
-      .first();
-
+      .first()
+      .limit(1);
+      console.log(user)
     // Se o usuário não existir, retorna false
     if (!user) {
       console.error("Usuário não encontrado para o email:", email);

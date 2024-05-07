@@ -43,9 +43,9 @@ function initializeDatabase() {
                 data TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             );
         `))
-        .then(() => db.raw (
-            `USE db_projeto;`
-        ))
+        // .then(() => db.raw (
+        //     `USE db_projeto;`
+        // ))
         .then(() => {
             console.log('Tables `user` and `log` are ready.');
         })

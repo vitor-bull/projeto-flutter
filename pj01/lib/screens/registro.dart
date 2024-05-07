@@ -1,47 +1,13 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 
 class RegistrationScreen extends StatelessWidget {
-  final TextEditingController nameController = TextEditingController();
-  final TextEditingController emailController = TextEditingController();
-  final TextEditingController passwordController = TextEditingController();
+  final _nameController = TextEditingController();
+  final _emailController = TextEditingController();
+  final _passwordController = TextEditingController();
 
   RegistrationScreen({Key? key}) : super(key: key);
-
-  Future<void> registerUser(BuildContext context) async {
-    try {
-      final String name = nameController.text;
-      final String email = emailController.text;
-      final String password = passwordController.text;
-
-      print('Enviando dados do usuário para registro:');
-      print('Nome: $name');
-      print('Email: $email');
-      print('Senha: $password');
-
-      final url = Uri.parse('http://192.168.200.108:3001/users/register?apiKey=grupo8_falaAI');
-      final response = await http.post(
-        url,
-        body: {
-          'name': name,
-          'email': email,
-          'password': password,
-        },
-      );
-
-    print('Resposta do servidor: ${response.body}');
-
-      if (response.statusCode == 200) {
-        // Requisição bem-sucedida
-        print('Usuário cadastrado com sucesso');
-      } else {
-        // Tratamento de erro
-        print('Falha ao cadastrar usuário: ${response.reasonPhrase}');
-      }
-    } catch (e) {
-      print('Erro ao registrar usuário: $e');
-    }
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -55,13 +21,14 @@ class RegistrationScreen extends StatelessWidget {
       ),
       body: SingleChildScrollView(
         child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 25.0, vertical: 100.0),
+          padding:
+              const EdgeInsets.symmetric(horizontal: 25.0, vertical: 100.0),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              TextField(
-                controller: nameController,
+              TextFormField(
+                controller: _nameController,
                 style: const TextStyle(color: Colors.white),
                 decoration: const InputDecoration(
                   labelText: 'Nome',
@@ -72,8 +39,8 @@ class RegistrationScreen extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: 20.0),
-              TextField(
-                controller: emailController,
+              TextFormField(
+                controller: _emailController,
                 style: const TextStyle(color: Colors.white),
                 decoration: const InputDecoration(
                   labelText: 'Email',
@@ -84,8 +51,8 @@ class RegistrationScreen extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: 20.0),
-              TextField(
-                controller: passwordController,
+              TextFormField(
+                controller: _passwordController,
                 style: const TextStyle(color: Colors.white),
                 decoration: const InputDecoration(
                   labelText: 'Senha',
@@ -98,12 +65,25 @@ class RegistrationScreen extends StatelessWidget {
               ),
               const SizedBox(height: 20.0),
               ElevatedButton(
-                onPressed: () {
-                  // Chama a função de registro do usuário
-                  registerUser(context);
+                onPressed: () async {
+                  try {
+                    var success = await register(_nameController.text,
+                        _emailController.text, _passwordController.text);
+                    if (success) {
+                      Navigator.pushReplacementNamed(context, '/login');
+                    } else {
+                      // Handle unsuccessful registration
+                    }
+                  } catch (e) {
+                    // Exibe a mensagem de erro
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text(e.toString())),
+                    );
+                  }
                 },
                 style: ButtonStyle(
-                  backgroundColor: MaterialStateProperty.all<Color>(Colors.blue),
+                  backgroundColor:
+                      MaterialStateProperty.all<Color>(Colors.blue),
                 ),
                 child: const Text(
                   'Cadastrar',
@@ -116,7 +96,8 @@ class RegistrationScreen extends StatelessWidget {
                   Navigator.pushReplacementNamed(context, '/login');
                 },
                 style: ButtonStyle(
-                  foregroundColor: MaterialStateProperty.all<Color>(Colors.blue),
+                  foregroundColor:
+                      MaterialStateProperty.all<Color>(Colors.blue),
                 ),
                 child: const Text(
                   'Já possui uma conta?\nClique aqui para fazer login',
@@ -129,5 +110,41 @@ class RegistrationScreen extends StatelessWidget {
         ),
       ),
     );
+  }
+}
+
+Future<bool> register(String name, String email, String password) async {
+  final url = Uri.parse(
+      'http://192.168.200.108:3001/users/register?apiKey=grupo8_falaAI');
+  final body = jsonEncode({'name': name, 'email': email, 'password': password});
+
+  try {
+    final response = await http.post(
+      url,
+      headers: <String, String>{
+        'Content-Type': 'application/json; charset=UTF-8',
+      },
+      body: body,
+    );
+
+    print('Resposta do servidor:');
+    print('Status: ${response.statusCode}');
+    print('Corpo: ${response.body}');
+
+    if (response.statusCode == 201) {
+      print('Registro bem-sucedido');
+      return true; // Registro bem-sucedido
+    } else if (response.statusCode == 400) {
+      print('Falha no registro: Dados inválidos');
+      throw Exception(
+          'Os dados fornecidos são inválidos'); // Exceção para dados inválidos
+    } else {
+      print('Erro desconhecido durante o registro');
+      throw Exception('Erro desconhecido'); // Exceção para outros erros
+    }
+  } catch (e) {
+    print('Erro ao fazer registro: $e');
+    throw Exception(
+        'Erro ao fazer registro: $e'); // Exceção com mensagem detalhada
   }
 }

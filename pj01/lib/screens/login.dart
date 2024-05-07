@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 
@@ -86,7 +87,7 @@ class LoginScreen extends StatelessWidget {
                   onPressed: () async {
                     if (_formKey.currentState!.validate()) {
                       print("Email: ${_emailController.text}");
-                      print("Senha: ${_senhaController}");
+                      print("Senha: ${_senhaController.text}");
 
                       try {
                         var success = await logar(
@@ -142,14 +143,17 @@ class LoginScreen extends StatelessWidget {
 }
 
 Future<bool> logar(String email, String password) async {
+  final url =
+      Uri.parse('http://192.168.200.108:3001/users/login?apiKey=grupo8_falaAI');
+  final body = jsonEncode({'email': email, 'password': password});
+
   try {
-    var url = Uri.parse("http://192.168.200.108:3001/users/login?apiKey=grupo8_falaAI");
-    var response = await http.post(
+    final response = await http.post(
       url,
-      body: {
-        'email': email,
-        'password': password,
+      headers: <String, String>{
+        'Content-Type': 'application/json; charset=UTF-8',
       },
+      body: body,
     );
 
     print('Resposta do servidor:');
@@ -161,14 +165,15 @@ Future<bool> logar(String email, String password) async {
       return true; // Login successful
     } else if (response.statusCode == 401) {
       print('Falha no login: E-mail ou senha inválida');
-      throw Exception('E-mail ou senha inválida'); // Throw an exception to be handled
+      throw Exception(
+          'E-mail ou senha inválida'); // Throw an exception to be handled
     } else {
       print('Erro desconhecido durante o login');
       throw Exception('Erro desconhecido'); // Throw an exception to be handled
     }
   } catch (e) {
     print('Erro ao fazer login: $e');
-    throw Exception('Erro ao fazer login: $e'); // Throw an exception with detailed message
+    throw Exception(
+        'Erro ao fazer login: $e'); // Throw an exception with detailed message
   }
 }
-

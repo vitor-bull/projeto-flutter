@@ -24,7 +24,7 @@ app.use('/users', userRoutes);
 
 initializeDatabase().then(() => {
     app.listen(PORT, () => {
-        logger.info(`Server is running on http://localhost:${PORT}`);
+        logger.info(`Server is running on http://192.168.200.108:${PORT}`);
     });
 }).catch(error => {
     logger.error('Failed to initialize database:', error);
