@@ -137,7 +137,7 @@ class RegistrationScreen extends StatelessWidget {
 
 Future<bool> register(String name, String email, String password) async {
   final url = Uri.parse(
-      'http://192.168.200.108:3001/users/register?apiKey=grupo8_falaAI');
+      'http://172.31.41.95:3001/users/register?apiKey=grupo8_falaAI');
   final body = jsonEncode({'name': name, 'email': email, 'password': password});
 
   try {
@@ -155,18 +155,15 @@ Future<bool> register(String name, String email, String password) async {
 
     if (response.statusCode == 201) {
       print('Registro bem-sucedido');
-      return true; // Registro bem-sucedido
+      return true;
     } else if (response.statusCode == 400) {
-      print('Falha no registro: Dados inválidos');
-      throw Exception(
-          'Os dados fornecidos são inválidos'); // Exceção para dados inválidos
+      throw 'Os dados fornecidos são inválidos';
+    } else if (response.statusCode == 409) {
+      throw 'Já existe um usuário com este e-mail';
     } else {
-      print('Erro desconhecido durante o registro');
-      throw Exception('Erro desconhecido'); // Exceção para outros erros
+      throw 'Erro desconhecido durante o registro';
     }
   } catch (e) {
-    print('Erro ao fazer registro: $e');
-    throw Exception(
-        'Erro ao fazer registro: $e'); // Exceção com mensagem detalhada
+    throw 'Erro ao fazer registro: $e';
   }
 }

@@ -144,7 +144,7 @@ class LoginScreen extends StatelessWidget {
 
 Future<bool> logar(String email, String password) async {
   final url =
-      Uri.parse('http://192.168.200.108:3001/users/login?apiKey=grupo8_falaAI');
+      Uri.parse('http://172.28.144.1:3001/users/login?apiKey=grupo8_falaAI');
   final body = jsonEncode({'email': email, 'password': password});
 
   try {
@@ -164,16 +164,11 @@ Future<bool> logar(String email, String password) async {
       print('Login bem-sucedido');
       return true; // Login successful
     } else if (response.statusCode == 401) {
-      print('Falha no login: E-mail ou senha inválida');
-      throw Exception(
-          'E-mail ou senha inválida'); // Throw an exception to be handled
+      throw 'E-mail ou senha inválida';
     } else {
-      print('Erro desconhecido durante o login');
-      throw Exception('Erro desconhecido'); // Throw an exception to be handled
+      throw 'Erro desconhecido durante o login'; 
     }
   } catch (e) {
-    print('Erro ao fazer login: $e');
-    throw Exception(
-        'Erro ao fazer login: $e'); // Throw an exception with detailed message
+    throw 'Erro ao fazer login: $e';
   }
 }
