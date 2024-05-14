@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'screens/splash_screen.dart';
 import 'screens/registro.dart';
 import 'screens/login.dart';
-import 'screens/pos_login.dart';
+import 'screens/app.dart';
 
 void main() {
   runApp(const FalaAi());
