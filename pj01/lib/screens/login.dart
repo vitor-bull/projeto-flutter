@@ -144,7 +144,7 @@ class LoginScreen extends StatelessWidget {
 
 Future<bool> logar(String email, String password) async {
   final url =
-      Uri.parse('http://172.28.144.1:3001/users/login?apiKey=grupo8_falaAI');
+      Uri.parse('http://192.168.200.100:3001/users/login?apiKey=grupo8_falaAI');
   final body = jsonEncode({'email': email, 'password': password});
 
   try {

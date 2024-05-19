@@ -137,7 +137,7 @@ class RegistrationScreen extends StatelessWidget {
 
 Future<bool> register(String name, String email, String password) async {
   final url = Uri.parse(
-      'http://172.31.41.95:3001/users/register?apiKey=grupo8_falaAI');
+      'http://192.168.200.100:3001/users/register?apiKey=grupo8_falaAI');
   final body = jsonEncode({'name': name, 'email': email, 'password': password});
 
   try {

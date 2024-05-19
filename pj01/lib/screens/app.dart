@@ -8,11 +8,17 @@ class PosLoginScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-        title: 'Fala AI',
-        theme: ThemeData(
-            primarySwatch: Colors.blue,
-            visualDensity: VisualDensity.adaptivePlatformDensity),
-        home: VoiceWordComparison());
+      title: 'Fala AI',
+      theme: ThemeData(
+        primarySwatch: Colors.blue,
+        visualDensity: VisualDensity.adaptivePlatformDensity,
+        textTheme: const TextTheme(
+          headlineSmall: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+          bodyLarge: TextStyle(fontSize: 18),
+        ),
+      ),
+      home: VoiceWordComparison(),
+    );
   }
 }
 
@@ -24,22 +30,26 @@ class VoiceWordComparison extends StatefulWidget {
 class _VoiceWordComparisonState extends State<VoiceWordComparison> {
   late stt.SpeechToText _speech;
   bool _isRecording = false;
-  String _text = 'Pressione e segure o botão para gravar seu áudio';
-  bool _buttonPressed = false;
+  String _text = 'Pressione o botão para gravar';
   String _wordToCompare = '';
+  String _recordedWord = '';
 
   @override
   void initState() {
     super.initState();
     _speech = stt.SpeechToText();
     _initializeSpeech();
-    fetchWord();
+    _generateWord();
   }
 
   void _initializeSpeech() async {
-    bool isAvailable = await _speech.initialize(onError: (error) {
-      setState(() => {});
-    });
+    bool isAvailable = await _speech.initialize(
+      onError: (error) {
+        setState(() {
+          _text = 'Reconhecimento de voz indisponível';
+        });
+      },
+    );
     if (!isAvailable) {
       setState(() {
         _text = 'Reconhecimento de voz indisponível';
@@ -49,29 +59,26 @@ class _VoiceWordComparisonState extends State<VoiceWordComparison> {
 
   void _startRecording() async {
     if (!_speech.isAvailable) {
-      _initializeSpeech(); // Reinitialize if not available
+      _initializeSpeech();
       return;
     }
 
     await _speech.listen(
-        onResult: (result) {
-          if (result.finalResult) {
-            setState(() {
-              _isRecording = false;
-              _text = 'Você disse: ${result.recognizedWords}';
-              _compareWords(result.recognizedWords);
-            });
-          }
-        },
-        listenFor: Duration(seconds: 5),
-        pauseFor: Duration(seconds: 1),
-        cancelOnError: true,
-        partialResults: true,
-        listenMode: stt.ListenMode.confirmation);
-
+      onResult: (result) {
+        setState(() {
+          _recordedWord = result.recognizedWords;
+          _text = 'Gravando...';
+          _compareWords(_recordedWord);
+        });
+      },
+      listenFor: null, // Record indefinitely until stopped
+      cancelOnError: true,
+      partialResults: true,
+      listenMode: stt.ListenMode.confirmation,
+    );
     setState(() {
       _isRecording = true;
-      _text = 'Ouvindo...';
+      _text = 'Gravando...';
     });
   }
 
@@ -82,24 +89,28 @@ class _VoiceWordComparisonState extends State<VoiceWordComparison> {
 
     setState(() {
       _isRecording = false;
-      _text = 'Gravação pausada';
+      _text = 'Gravação finalizada';
     });
   }
 
   void _compareWords(String spokenWord) {
     if (spokenWord.toLowerCase() == _wordToCompare.toLowerCase()) {
+      _stopRecording();
       setState(() {
-        _text = "Pronúncia correta, parabéns!";
+        _text = "Pronúncia correta, parabéns! 🥳";
+        _generateWord();
       });
-      fetchWord();
     } else {
       setState(() {
-        _text = "Áudio não corresponde ao texto (${spokenWord.toLowerCase()}). Tente novamente.";
+        _text =
+            "Áudio não corresponde à palavra! 🙁";
+        _recordedWord = spokenWord;
+        _isRecording = false;
       });
     }
   }
 
-  void fetchWord() {
+  void _generateWord() {
     final wordGenerator = WordGenerator();
     _wordToCompare = wordGenerator.randomVerb();
     setState(() {});
@@ -108,35 +119,55 @@ class _VoiceWordComparisonState extends State<VoiceWordComparison> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        appBar: AppBar(
-          title: Text('Treino de Pronúncia'),
-        ),
-        body: Center(
-            child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: <Widget>[
-              Text('Palavra a Comparar: $_wordToCompare'),
-              Text(_text),
-              SizedBox(height: 20),
-              GestureDetector(
-                onLongPress: () {
-                  _buttonPressed = true;
-                  _startRecording();
-                },
-                onLongPressEnd: (details) {
-                  _buttonPressed = false;
-                  _stopRecording();
-                },
-                child: Icon(
-                  Icons.mic,
-                  color: _isRecording ? Colors.red : Colors.blue,
+      appBar: AppBar(
+        title: const Text('Fala AI!', style: TextStyle(fontSize: 22, color: Color.fromARGB(255, 250, 249, 249))),
+        centerTitle: true,
+        backgroundColor: Color.fromARGB(255, 3, 41, 71),
+      ),
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.spaceAround,
+          children: [
+            Text('Palavra escolhida:', style: Theme.of(context).textTheme.headlineSmall),
+            Text(
+              _wordToCompare,
+              style: const TextStyle(fontSize: 32, fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 30),
+            Text(_text, style: Theme.of(context).textTheme.bodyLarge),
+            const SizedBox(height: 20),
+            Text('Você disse:', style: Theme.of(context).textTheme.bodyLarge),
+            Text(
+              _recordedWord,
+              style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Color.fromARGB(255, 32, 3, 90)),
+            ),
+            const SizedBox(height: 40),
+            FloatingActionButton(
+              backgroundColor: const Color.fromARGB(255, 3, 41, 71),
+              onPressed: _isRecording ? _stopRecording : _startRecording,
+              child: Icon(
+                color: const Color.fromARGB(255, 250, 249, 249),
+                _isRecording ? Icons.stop : Icons.mic,
+                size: 35,
+              ),
+            ),
+            const SizedBox(height: 30),
+            ElevatedButton(
+              onPressed: _generateWord,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color.fromARGB(255, 3, 41, 71),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10.0),
+                  side: const BorderSide(width: 1)
                 ),
+                padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 15),
+                textStyle: const TextStyle(fontSize: 18),
               ),
-              SizedBox(height: 20),
-              ElevatedButton(
-                onPressed: fetchWord,
-                child: Text('Nova Palavra'),
-              ),
-            ])));
+              child: const Text('Nova Palavra', style: TextStyle(color: Color.fromARGB(255, 250, 249, 249), fontWeight: FontWeight.bold)) ,
+            ),
+          ],
+        ),
+      ),
+    );
   }
 }
