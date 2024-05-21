@@ -1,14 +1,27 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:url_launcher/url_launcher.dart';
 
-class RegistrationScreen extends StatelessWidget {
+class RegistrationScreen extends StatefulWidget {
+  RegistrationScreen({Key? key}) : super(key: key);
+
+  @override
+  _RegistrationScreenState createState() => _RegistrationScreenState();
+}
+
+class _RegistrationScreenState extends State<RegistrationScreen> {
   final _nameController = TextEditingController();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
-  final _confirmPasswordController = TextEditingController(); // Novo controlador
+  final _confirmPasswordController = TextEditingController();
 
-  RegistrationScreen({Key? key}) : super(key: key);
+  bool _acceptedTerms = false;
+
+  void _launchURL() async {
+    const url = 'https://www.planalto.gov.br/ccivil_03/_ato2015-2018/2018/lei/l13709.htm';
+    if (!await launch(url)) throw 'Could not launch $url';
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -78,14 +91,42 @@ class RegistrationScreen extends StatelessWidget {
                 obscureText: true,
               ),
               const SizedBox(height: 20.0),
+              const SizedBox(height: 20.0),
+              Row(
+                children: [
+                  Checkbox(
+                    value: _acceptedTerms,
+                    onChanged: (bool? newValue) {
+                      setState(() {
+                        _acceptedTerms = newValue!;
+                      });
+                    },
+                  ),
+                  Expanded(
+                    child: GestureDetector(
+                      onTap: _launchURL,
+                      child: const Text(
+                        'Aceito os termos de serviço',
+                        style: TextStyle(color: Colors.white, decoration: TextDecoration.underline),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
               ElevatedButton(
                 onPressed: () async {
+                  if (!_acceptedTerms) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text("Você precisa aceitar os termos de serviço para se registrar."),
+                      ),
+                    );
+                    return;
+                  }
                   try {
-                    // Verifica se a senha e a confirmação de senha são iguais
                     if (_passwordController.text !=
                         _confirmPasswordController.text) {
-                      throw Exception(
-                          'A senha e a confirmação de senha não coincidem');
+                      throw 'A senha e a confirmação de senha não coincidem';
                     }
                     var success = await register(
                         _nameController.text,
@@ -137,7 +178,7 @@ class RegistrationScreen extends StatelessWidget {
 
 Future<bool> register(String name, String email, String password) async {
   final url = Uri.parse(
-      'http://192.168.200.100:3001/users/register?apiKey=grupo8_falaAI');
+      'http://172.31.41.95:3001/users/register?apiKey=grupo8_falaAI');
   final body = jsonEncode({'name': name, 'email': email, 'password': password});
 
   try {
